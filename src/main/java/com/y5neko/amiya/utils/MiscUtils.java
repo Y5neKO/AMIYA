@@ -1,0 +1,18 @@
+package com.y5neko.amiya.utils;
+
+public class MiscUtils {
+    /**
+     * 生成随机字符串
+     * @param length 字符串长度
+     * @return 随机字符串
+     */
+    public static String getRamdomStr(int length) {
+        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int index = (int) (Math.random() * str.length());
+            sb.append(str.charAt(index));
+        }
+        return sb.toString();
+    }
+}

@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/vuln_scan
+    username: postgres
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true                # 表列名下划线转驼峰
+  global-config:
+    db-config:
+      id-type: auto                                   # 主键自增
+  type-handlers-package: com.y5neko.amiya.handler     # 自定义类型处理器包
