@@ -4,9 +4,9 @@ INSERT INTO roles (role_name, description) VALUES
 ('user', '普通用户');
 
 -- 用户
-INSERT INTO users (username, password_hash, email, role_id, is_active) VALUES
-('admin', 'hash_admin', 'admin@example.com', 1, TRUE),
-('user1', 'hash_user1', 'user1@example.com', 2, TRUE);
+INSERT INTO users (username, password, email, role_id, is_active) VALUES
+('admin', '$2a$10$2GCPQOsQiPRreonPcH4TLeUiXXC/B/MqMcHSgBEmIlpB3GiqBE8by', 'admin@example.com', 1, TRUE),
+('user1', '$2a$10$2GCPQOsQiPRreonPcH4TLeUiXXC/B/MqMcHSgBEmIlpB3GiqBE8by', 'user1@example.com', 2, TRUE);
 
 -- 资产
 INSERT INTO assets (name, ip, domain, port, protocol, tags, owner_id, status) VALUES

@@ -48,7 +48,7 @@ public class DatabaseIntegrationTest {
         // 插入 User
         User user = new User();
         user.setUsername("tester" + MiscUtils.getRamdomStr(6));
-        user.setPasswordHash("123456");
+        user.setPassword("123456");
         user.setEmail("tester@example.com");
         user.setRoleId(role.getId());
         user.setIsActive(true);

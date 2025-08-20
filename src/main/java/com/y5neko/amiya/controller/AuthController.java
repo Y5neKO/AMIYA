@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 认证控制器
+ * 处理用户登录、注册、刷新 JWT 等认证相关的 HTTP 请求
+ */
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -50,7 +54,7 @@ public class AuthController {
         }
 
         // 验证密码
-        if (!BCrypt.checkpw(password, user.getPasswordHash())) {
+        if (!BCrypt.checkpw(password, user.getPassword())) {
             response.put("success", false);
             response.put("message", "账号或密码错误");
             return response;

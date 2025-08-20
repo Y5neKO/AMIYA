@@ -1,7 +1,10 @@
 package com.y5neko.amiya.exception;
 
+import com.y5neko.amiya.dto.ApiResponse;
+import com.y5neko.amiya.util.LogUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -9,7 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * 全局异常处理类
@@ -18,43 +20,51 @@ import java.util.Objects;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 自定义异常返回
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleException(Exception ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("type", ex.getClass().getSimpleName());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    /**
+     * 处理自定义业务异常
+     */
+    @ExceptionHandler(BizException.class)
+    public ApiResponse<?> handleBizException(BizException ex) {
+        return ApiResponse.error(ex.getMessage());
     }
 
-    // 处理参数校验异常
+    /**
+     * 处理参数校验异常
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage());
-        response.put("type", "ValidationException");
-        return ResponseEntity.badRequest().body(response);
+    public ApiResponse<?> handleValidationException(MethodArgumentNotValidException ex) {
+        String msg = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .findFirst()
+                .orElse("参数校验失败");
+        return ApiResponse.error(msg);
     }
 
-    // Spring Security 403 异常
+    /**
+     * 处理 Spring Security 403 异常
+     */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", false);
         response.put("message", "无权限访问");
-        response.put("type", "AccessDenied");
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
-    // 自定义业务异常返回
-    @ExceptionHandler(BizException.class)
-    public ResponseEntity<Map<String, Object>> handleBizException(BizException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("success", false);
-        body.put("message", ex.getMessage());
-        body.put("code", ex.getCode());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    /**
+     * 处理 JSON 格式错误
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ApiResponse<?> handleJsonParseException(HttpMessageNotReadableException ex) {
+        return ApiResponse.error("请求数据格式错误");
+    }
+
+    /**
+     * 处理其他未知异常
+     */
+    @ExceptionHandler(Exception.class)
+    public ApiResponse<?> handleException(Exception ex) {
+        LogUtils.error("未知异常：" + ex.getMessage(), ex);
+        return ApiResponse.error("服务器内部错误");
     }
 }

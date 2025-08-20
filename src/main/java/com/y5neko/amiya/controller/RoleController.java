@@ -2,6 +2,7 @@ package com.y5neko.amiya.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.y5neko.amiya.dto.ApiResponse;
 import com.y5neko.amiya.dto.PageResponse;
 import com.y5neko.amiya.entity.Role;
 import com.y5neko.amiya.entity.User;
@@ -27,49 +28,50 @@ public class RoleController {
     }
 
     @GetMapping("/{id}")
-    public Role getRole(@PathVariable Long id) {
+    public ApiResponse<Role> getRole(@PathVariable Long id) {
         Role role = roleService.getById(id);
         if (role == null) {
             throw new BizException("角色不存在");
         }
-        return role;
+        return ApiResponse.ok(role);
     }
 
     @GetMapping("/list")
-    public PageResponse<Role> listRoles(
+    public ApiResponse<PageResponse<Role>> listRoles(
             @RequestParam(defaultValue = "1") long page,
             @RequestParam(defaultValue = "10") long size,
             @RequestParam(required = false) String keyword
     ) {
         Page<Role> pageData = roleService.getPage(page, size, keyword);
-        return new PageResponse<>(
+        PageResponse<Role> resp = new PageResponse<>(
                 pageData.getCurrent(),
                 pageData.getSize(),
                 pageData.getTotal(),
                 pageData.getRecords()
         );
+        return ApiResponse.ok(resp);
     }
 
     @PostMapping
-    public Role createRole(@RequestBody Role role) {
+    public ApiResponse<Role> createRole(@RequestBody Role role) {
         if (role.getRoleName() == null || role.getRoleName().trim().isEmpty()) {
             throw new BizException("角色名不能为空");
         }
-        return roleService.create(role);
+        return ApiResponse.ok(roleService.create(role));
     }
 
     @PutMapping("/{id}")
-    public Role updateRole(@PathVariable Long id, @RequestBody Role role) {
+    public ApiResponse<Role> updateRole(@PathVariable Long id, @RequestBody Role role) {
         Role exist = roleService.getById(id);
         if (exist == null) {
             throw new BizException("角色不存在");
         }
         role.setId(id);
-        return roleService.update(role);
+        return ApiResponse.ok(roleService.update(role));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteRole(@PathVariable Long id) {
+    public ApiResponse<Void> deleteRole(@PathVariable Long id) {
         Role role = roleService.getById(id);
         if (role == null) {
             throw new BizException("角色不存在");
@@ -84,5 +86,6 @@ public class RoleController {
         }
 
         roleService.delete(id);
+        return ApiResponse.ok(null);
     }
 }
