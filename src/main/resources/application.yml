@@ -6,6 +6,11 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    user:
+      name: y5neko
+      password: 123456
+      roles: admin
 
 # MyBatis-Plus 配置
 mybatis-plus:

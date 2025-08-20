@@ -1,5 +1,8 @@
-package com.y5neko.amiya.utils;
+package com.y5neko.amiya.util;
 
+/**
+ *  misc工具类
+ */
 public class MiscUtils {
     /**
      * 生成随机字符串

@@ -6,6 +6,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 任务实体类
+ */
 @Data
 @TableName("tasks")
 public class Task {

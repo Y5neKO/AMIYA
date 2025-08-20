@@ -6,6 +6,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 报告实体类
+ */
 @Data
 @TableName("reports")
 public class Report {

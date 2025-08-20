@@ -9,6 +9,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ * 任务结果实体类
+ */
 @Data
 @TableName("task_results")
 public class TaskResult {

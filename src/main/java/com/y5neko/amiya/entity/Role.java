@@ -6,6 +6,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 角色实体类
+ */
 @Data
 @TableName("roles")
 public class Role {

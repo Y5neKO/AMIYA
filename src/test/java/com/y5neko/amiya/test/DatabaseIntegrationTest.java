@@ -2,7 +2,7 @@ package com.y5neko.amiya.test;
 
 import com.y5neko.amiya.entity.*;
 import com.y5neko.amiya.mapper.*;
-import com.y5neko.amiya.utils.MiscUtils;
+import com.y5neko.amiya.util.MiscUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

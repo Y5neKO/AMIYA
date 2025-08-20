@@ -1,19 +1,22 @@
 package com.y5neko.amiya.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.y5neko.amiya.handler.StringArrayTypeHandler;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
-@Data
-@TableName("assets")
+@Setter
+@Getter
+@TableName(value = "assets", autoResultMap = true)
 public class Asset {
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Long id;
+
     private String name;
     private String ip;
     private String domain;
@@ -21,10 +24,11 @@ public class Asset {
     private String protocol;
 
     @TableField(typeHandler = StringArrayTypeHandler.class)
-    private String[] tags;  // tags需要存储为json字符串
+    private String[] tags;
 
     private Long ownerId;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
 }
