@@ -1,7 +1,10 @@
 package com.y5neko.amiya.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.y5neko.amiya.dto.PageResponse;
 import com.y5neko.amiya.entity.Asset;
+import com.y5neko.amiya.exception.BizException;
 import com.y5neko.amiya.service.AssetService;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,66 +16,64 @@ public class AssetController {
 
     private final AssetService assetService;
 
-    /**
-     * 构造函数
-     * @param assetService 资产服务
-     */
     public AssetController(AssetService assetService) {
         this.assetService = assetService;
     }
 
-    /**
-     * 获取资产详情
-     * @param id 资产ID
-     * @return 资产详情
-     */
     @GetMapping("/{id}")
     public Asset getAsset(@PathVariable Long id) {
-        return assetService.getById(id);
+        Asset asset = assetService.getById(id);
+        if (asset == null) {
+            throw new BizException("资产不存在");
+        }
+        return asset;
     }
 
-    /**
-     * 分页获取资产列表
-     * @param page 当前页，默认 1
-     * @param size 每页条数，默认 10
-     * @return 分页资产数据
-     */
     @GetMapping("/list")
-    public Page<Asset> getAssetsPage(@RequestParam(defaultValue = "1") long page,
-                                     @RequestParam(defaultValue = "10") long size) {
-        System.out.println("page = " + page);
-        System.out.println("size = " + size);
-        return assetService.getPage(page, size);
+    public PageResponse<Asset> listAssets(
+            @RequestParam(defaultValue = "1") long page,
+            @RequestParam(defaultValue = "10") long size,
+            @RequestParam(required = false) String keyword
+    ) {
+        Page<Asset> pageData;
+        if (keyword == null || keyword.trim().isEmpty()) {
+            pageData = assetService.getPage(page, size, null);
+        } else {
+            pageData = assetService.getPage(page, size, keyword);
+        }
+
+        return new PageResponse<>(
+                pageData.getCurrent(),
+                pageData.getSize(),
+                pageData.getTotal(),
+                pageData.getRecords()
+        );
     }
 
-    /**
-     * 创建资产
-     * @param asset 资产信息
-     * @return 创建的资产
-     */
     @PostMapping
     public Asset createAsset(@RequestBody Asset asset) {
+        if (asset.getName() == null || asset.getName().trim().isEmpty()) {
+            throw new BizException("资产名称不能为空");
+        }
         return assetService.create(asset);
     }
 
-    /**
-     * 更新资产
-     * @param id 资产ID
-     * @param asset 资产信息
-     * @return 更新的资产
-     */
     @PutMapping("/{id}")
     public Asset updateAsset(@PathVariable Long id, @RequestBody Asset asset) {
+        Asset exist = assetService.getById(id);
+        if (exist == null) {
+            throw new BizException("资产不存在");
+        }
         asset.setId(id);
         return assetService.update(asset);
     }
 
-    /**
-     * 删除资产
-     * @param id 资产ID
-     */
     @DeleteMapping("/{id}")
     public void deleteAsset(@PathVariable Long id) {
+        Asset asset = assetService.getById(id);
+        if (asset == null) {
+            throw new BizException("资产不存在");
+        }
         assetService.delete(id);
     }
 }

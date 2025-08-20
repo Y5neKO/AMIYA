@@ -2,7 +2,6 @@ package com.y5neko.amiya.security.config;
 
 import com.y5neko.amiya.security.JwtAuthenticationEntryPoint;
 import com.y5neko.amiya.security.filter.JwtAuthenticationFilter;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -17,11 +16,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final JwtAuthenticationEntryPoint entryPoint;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final AccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, JwtAuthenticationEntryPoint entryPoint) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, AccessDeniedHandler accessDeniedHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.entryPoint = entryPoint;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     /**
@@ -44,27 +45,13 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 // 自定义 403 处理
                 .exceptionHandling(exception ->
-                        exception.accessDeniedHandler(accessDeniedHandler())
+                        exception.accessDeniedHandler(accessDeniedHandler)
                 )
                 // 自定义 401 处理
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(entryPoint)
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 );
 
         return http.build();
     }
-
-    /**
-     * 自定义 403 处理
-     * @return 访问拒绝处理程序
-     */
-    @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
-        return (request, response, accessDeniedException) -> {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"success\":false,\"message\":\"permission denied\"}");
-        };
-    }
-
 }

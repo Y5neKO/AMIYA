@@ -42,18 +42,17 @@ public class AuthController {
 
         Map<String, Object> response = new HashMap<>();
 
-        System.out.println(user);
-
+        // 检查用户是否存在
         if (user == null) {
             response.put("success", false);
-            response.put("message", "用户不存在");
+            response.put("message", "账号或密码错误");
             return response;
         }
 
         // 验证密码
         if (!BCrypt.checkpw(password, user.getPasswordHash())) {
             response.put("success", false);
-            response.put("message", "密码错误");
+            response.put("message", "账号或密码错误");
             return response;
         }
 
