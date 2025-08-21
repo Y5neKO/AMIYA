@@ -1,17 +1,16 @@
 package com.y5neko.amiya.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.y5neko.amiya.dto.ApiResponse;
-import com.y5neko.amiya.dto.PageResponse;
+import com.y5neko.amiya.dto.response.ApiResponse;
+import com.y5neko.amiya.dto.AssetRequest;
+import com.y5neko.amiya.dto.response.PageResponse;
 import com.y5neko.amiya.entity.Asset;
 import com.y5neko.amiya.exception.BizException;
 import com.y5neko.amiya.service.AssetService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 资产控制器
- * 处理资产相关的 HTTP 请求
- */
 @RestController
 @RequestMapping("/asset")
 public class AssetController {
@@ -52,21 +51,22 @@ public class AssetController {
     }
 
     @PostMapping
-    public ApiResponse<Asset> createAsset(@RequestBody Asset asset) {
-        if (asset.getName() == null || asset.getName().trim().isEmpty()) {
-            throw new BizException("资产名称不能为空");
-        }
+    public ApiResponse<Asset> createAsset(@Validated(AssetRequest.Create.class) @RequestBody AssetRequest req) {
+        Asset asset = new Asset();
+        BeanUtils.copyProperties(req, asset);
         return ApiResponse.ok(assetService.create(asset));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Asset> updateAsset(@PathVariable Long id, @RequestBody Asset asset) {
+    public ApiResponse<Asset> updateAsset(@PathVariable Long id,
+                                          @Validated(AssetRequest.Update.class) @RequestBody AssetRequest req) {
         Asset exist = assetService.getById(id);
         if (exist == null) {
             throw new BizException("资产不存在");
         }
-        asset.setId(id);
-        return ApiResponse.ok(assetService.update(asset));
+        BeanUtils.copyProperties(req, exist);
+        exist.setId(id);
+        return ApiResponse.ok(assetService.update(exist));
     }
 
     @DeleteMapping("/{id}")

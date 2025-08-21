@@ -1,17 +1,21 @@
 package com.y5neko.amiya.exception;
 
-import com.y5neko.amiya.dto.ApiResponse;
+import com.y5neko.amiya.dto.response.ApiResponse;
 import com.y5neko.amiya.util.LogUtils;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 全局异常处理类
@@ -26,18 +30,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BizException.class)
     public ApiResponse<?> handleBizException(BizException ex) {
         return ApiResponse.error(ex.getMessage());
-    }
-
-    /**
-     * 处理参数校验异常
-     */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ApiResponse<?> handleValidationException(MethodArgumentNotValidException ex) {
-        String msg = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .findFirst()
-                .orElse("参数校验失败");
-        return ApiResponse.error(msg);
     }
 
     /**
@@ -60,11 +52,54 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 处理其他未知异常
+     * 处理 @Valid / @RequestBody 校验失败
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Map<String, Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+
+        Map<String, String> errors = new HashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.put(error.getField(), error.getDefaultMessage());
+        }
+
+        response.put("errors", errors);
+        response.put("code", HttpStatus.BAD_REQUEST.value());
+        return response;
+    }
+
+    /**
+     * 处理 @Validated(groups=...) 校验失败（通常是 @RequestParam、@PathVariable、@ModelAttribute 等）
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Map<String, Object> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+
+        Map<String, String> errors = new HashMap<>();
+        Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
+        for (ConstraintViolation<?> violation : violations) {
+            String field = violation.getPropertyPath().toString();
+            String message = violation.getMessage();
+            errors.put(field, message);
+        }
+
+        response.put("errors", errors);
+        response.put("code", HttpStatus.BAD_REQUEST.value());
+        return response;
+    }
+
+    /**
+     * 处理其它未知异常
      */
     @ExceptionHandler(Exception.class)
-    public ApiResponse<?> handleException(Exception ex) {
+    public Map<String, Object> handleOtherException(Exception ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("message", "服务器内部错误");
+        response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
         LogUtils.error("未知异常：" + ex.getMessage(), ex);
-        return ApiResponse.error("服务器内部错误");
+        return response;
     }
 }

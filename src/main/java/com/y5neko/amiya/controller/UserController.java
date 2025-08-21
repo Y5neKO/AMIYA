@@ -1,30 +1,29 @@
 package com.y5neko.amiya.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.y5neko.amiya.dto.ApiResponse;
-import com.y5neko.amiya.dto.PageResponse;
+import com.y5neko.amiya.dto.response.ApiResponse;
+import com.y5neko.amiya.dto.response.PageResponse;
+import com.y5neko.amiya.dto.UserRequest;
 import com.y5neko.amiya.entity.User;
 import com.y5neko.amiya.exception.BizException;
-import com.y5neko.amiya.service.UserService;
 import com.y5neko.amiya.service.RoleService;
-import jakarta.validation.Valid;
+import com.y5neko.amiya.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 用户控制器
- * 处理用户相关的 HTTP 请求
- */
 @RestController
 @RequestMapping("/user")
 @PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
     private final UserService userService;
+    private final RoleService roleService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, RoleService roleService) {
         this.userService = userService;
+        this.roleService = roleService;
     }
 
     @GetMapping("/{id}")
@@ -53,79 +52,55 @@ public class UserController {
     }
 
     @PostMapping
-    public ApiResponse<User> createUser(@RequestBody User user) {
-        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
-            throw new BizException("用户名不能为空");
-        }
+    public ApiResponse<User> createUser(
+            @Validated(UserRequest.Create.class) @RequestBody UserRequest request) {
 
-        // 校验用户名唯一
-        if (userService.getByUsername(user.getUsername()) != null) {
+        if (userService.getByUsername(request.getUsername()) != null) {
             throw new BizException("用户名已存在");
         }
-
-        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-            throw new BizException("密码不能为空");
-        }
-        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
-            throw new BizException("邮箱不能为空");
-        }
-        if (user.getRoleId() == null) {
-            throw new BizException("角色ID不能为空");
-        }
-
-        // 校验角色是否存在
-        if (userService.getRoleById(user.getRoleId()) == null) {
+        if (roleService.getById(request.getRoleId()) == null) {
             throw new BizException("角色不存在");
         }
 
-        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
+        user.setEmail(request.getEmail());
+        user.setRoleId(request.getRoleId());
+        user.setIsActive(request.getIsActive());
+
         return ApiResponse.ok(userService.create(user));
     }
 
-
     @PutMapping("/{id}")
-    public ApiResponse<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+    public ApiResponse<User> updateUser(
+            @PathVariable Long id,
+            @Validated(UserRequest.Update.class) @RequestBody UserRequest request) {
+
         User exist = userService.getById(id);
         if (exist == null) {
             throw new BizException("用户不存在");
         }
 
-        // 校验用户名是否被其他用户占用
-        if (user.getUsername() != null && !user.getUsername().trim().isEmpty()) {
-            User userWithSameUsername = userService.getByUsername(user.getUsername());
-            if (userWithSameUsername != null && !userWithSameUsername.getId().equals(id)) {
-                throw new BizException("用户名已存在");
-            }
-        } else {
-            throw new BizException("用户名不能为空");
+        if (userService.getByUsername(request.getUsername()) != null &&
+                !exist.getUsername().equals(request.getUsername())) {
+            throw new BizException("用户名已存在");
         }
-
-        // 校验其他必填字段
-        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
-            throw new BizException("邮箱不能为空");
-        }
-        if (user.getRoleId() == null) {
-            throw new BizException("角色ID不能为空");
-        }
-
-        // 校验角色是否存在
-        if (userService.getRoleById(user.getRoleId()) == null) {
+        if (roleService.getById(request.getRoleId()) == null) {
             throw new BizException("角色不存在");
         }
 
-        user.setId(id);
+        exist.setUsername(request.getUsername());
+        exist.setEmail(request.getEmail());
+        exist.setRoleId(request.getRoleId());
+        exist.setIsActive(request.getIsActive());
 
-        // 如果传了密码，则加密；否则保留原密码
-        if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
-            user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
-        } else {
-            user.setPassword(exist.getPassword());
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            exist.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
         }
 
-        return ApiResponse.ok(userService.update(user));
+        return ApiResponse.ok(userService.update(exist));
     }
-
-
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteUser(@PathVariable Long id) {

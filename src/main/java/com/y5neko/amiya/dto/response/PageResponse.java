@@ -1,4 +1,4 @@
-package com.y5neko.amiya.dto;
+package com.y5neko.amiya.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;

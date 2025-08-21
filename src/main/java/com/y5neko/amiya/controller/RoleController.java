@@ -2,14 +2,16 @@ package com.y5neko.amiya.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.y5neko.amiya.dto.ApiResponse;
-import com.y5neko.amiya.dto.PageResponse;
+import com.y5neko.amiya.dto.response.ApiResponse;
+import com.y5neko.amiya.dto.response.PageResponse;
+import com.y5neko.amiya.dto.RoleRequest;
 import com.y5neko.amiya.entity.Role;
 import com.y5neko.amiya.entity.User;
 import com.y5neko.amiya.exception.BizException;
 import com.y5neko.amiya.mapper.UserMapper;
 import com.y5neko.amiya.service.RoleService;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,21 +55,25 @@ public class RoleController {
     }
 
     @PostMapping
-    public ApiResponse<Role> createRole(@RequestBody Role role) {
-        if (role.getRoleName() == null || role.getRoleName().trim().isEmpty()) {
-            throw new BizException("角色名不能为空");
-        }
+    public ApiResponse<Role> createRole(
+            @Validated(RoleRequest.Create.class) @RequestBody RoleRequest request) {
+
+        Role role = new Role();
+        role.setRoleName(request.getRoleName());
         return ApiResponse.ok(roleService.create(role));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Role> updateRole(@PathVariable Long id, @RequestBody Role role) {
+    public ApiResponse<Role> updateRole(
+            @PathVariable Long id,
+            @Validated(RoleRequest.Update.class) @RequestBody RoleRequest request) {
+
         Role exist = roleService.getById(id);
         if (exist == null) {
             throw new BizException("角色不存在");
         }
-        role.setId(id);
-        return ApiResponse.ok(roleService.update(role));
+        exist.setRoleName(request.getRoleName());
+        return ApiResponse.ok(roleService.update(exist));
     }
 
     @DeleteMapping("/{id}")
@@ -77,7 +83,6 @@ public class RoleController {
             throw new BizException("角色不存在");
         }
 
-        // 查询是否有用户绑定该角色
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("role_id", id);
         List<User> users = userMapper.selectList(wrapper);
