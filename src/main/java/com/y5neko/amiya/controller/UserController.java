@@ -3,7 +3,7 @@ package com.y5neko.amiya.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.y5neko.amiya.dto.response.ApiResponse;
 import com.y5neko.amiya.dto.response.PageResponse;
-import com.y5neko.amiya.dto.UserRequest;
+import com.y5neko.amiya.dto.request.UserRequest;
 import com.y5neko.amiya.entity.User;
 import com.y5neko.amiya.exception.BizException;
 import com.y5neko.amiya.service.RoleService;
@@ -51,7 +51,7 @@ public class UserController {
         return ApiResponse.ok(resp);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ApiResponse<User> createUser(
             @Validated(UserRequest.Create.class) @RequestBody UserRequest request) {
 

@@ -1,5 +1,7 @@
 package com.y5neko.amiya.util;
 
+import java.util.List;
+
 /**
  *  misc工具类
  */
@@ -17,5 +19,14 @@ public class MiscUtils {
             sb.append(str.charAt(index));
         }
         return sb.toString();
+    }
+
+    /**
+     * 转换List<String>为String[]
+     * @param list 列表
+     * @return 数组
+     */
+    public static String[] convertListToArray(List<String> list) {
+        return list == null ? null : list.toArray(new String[0]);
     }
 }

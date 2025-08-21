@@ -1,6 +1,6 @@
 package com.y5neko.amiya.controller;
 
-import com.y5neko.amiya.dto.AuthRequest;
+import com.y5neko.amiya.dto.request.AuthRequest;
 import com.y5neko.amiya.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package com.y5neko.amiya.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.y5neko.amiya.dto.AuthRequest;
+import com.y5neko.amiya.dto.request.AuthRequest;
 import com.y5neko.amiya.entity.Role;
 import com.y5neko.amiya.entity.User;
 import com.y5neko.amiya.mapper.RoleMapper;

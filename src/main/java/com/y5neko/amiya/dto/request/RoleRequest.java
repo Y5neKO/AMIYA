@@ -1,4 +1,4 @@
-package com.y5neko.amiya.dto;
+package com.y5neko.amiya.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

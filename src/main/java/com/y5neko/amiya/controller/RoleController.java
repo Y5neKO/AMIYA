@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.y5neko.amiya.dto.response.ApiResponse;
 import com.y5neko.amiya.dto.response.PageResponse;
-import com.y5neko.amiya.dto.RoleRequest;
+import com.y5neko.amiya.dto.request.RoleRequest;
 import com.y5neko.amiya.entity.Role;
 import com.y5neko.amiya.entity.User;
 import com.y5neko.amiya.exception.BizException;
@@ -54,7 +54,7 @@ public class RoleController {
         return ApiResponse.ok(resp);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ApiResponse<Role> createRole(
             @Validated(RoleRequest.Create.class) @RequestBody RoleRequest request) {
 

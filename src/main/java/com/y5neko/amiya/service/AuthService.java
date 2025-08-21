@@ -1,6 +1,6 @@
 package com.y5neko.amiya.service;
 
-import com.y5neko.amiya.dto.AuthRequest;
+import com.y5neko.amiya.dto.request.AuthRequest;
 
 import java.util.Map;
 

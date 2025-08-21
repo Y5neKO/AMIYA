@@ -1,5 +1,7 @@
 package com.y5neko.amiya.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import jakarta.validation.constraints.Email;
@@ -34,6 +36,9 @@ public class User {
     @NotNull(message = "是否激活不能为空")
     private Boolean isActive;
 
+    @TableField(fill = FieldFill.INSERT)  // 插入时自动填充
     private LocalDateTime createdAt;
+
+    @TableField(fill = FieldFill.INSERT_UPDATE) // 插入和更新时自动填充
     private LocalDateTime updatedAt;
 }
