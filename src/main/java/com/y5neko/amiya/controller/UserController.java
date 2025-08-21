@@ -8,14 +8,21 @@ import com.y5neko.amiya.entity.User;
 import com.y5neko.amiya.exception.BizException;
 import com.y5neko.amiya.service.RoleService;
 import com.y5neko.amiya.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 用户控制器<br><br>
+ * <b>只有管理员才能管理用户</b>
+ */
 @RestController
 @RequestMapping("/user")
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "用户管理", description = "用户相关接口")
 public class UserController {
 
     private final UserService userService;
@@ -27,6 +34,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "获取用户", description = "根据用户ID获取用户信息")
     public ApiResponse<User> getUser(@PathVariable Long id) {
         User user = userService.getById(id);
         if (user == null) {
@@ -36,6 +44,7 @@ public class UserController {
     }
 
     @GetMapping("/list")
+    @Operation(summary = "获取用户列表", description = "根据分页参数和可选的关键词获取用户列表")
     public ApiResponse<PageResponse<User>> listUsers(
             @RequestParam(defaultValue = "1") long page,
             @RequestParam(defaultValue = "10") long size,
@@ -52,6 +61,7 @@ public class UserController {
     }
 
     @PostMapping("/create")
+    @Operation(summary = "创建用户", description = "根据用户请求创建用户")
     public ApiResponse<User> createUser(
             @Validated(UserRequest.Create.class) @RequestBody UserRequest request) {
 
@@ -73,6 +83,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "更新用户", description = "根据用户ID和用户请求更新用户信息")
     public ApiResponse<User> updateUser(
             @PathVariable Long id,
             @Validated(UserRequest.Update.class) @RequestBody UserRequest request) {
@@ -102,12 +113,24 @@ public class UserController {
         return ApiResponse.ok(userService.update(exist));
     }
 
+    /**
+     * 删除用户(必须保留一个默认管理员)
+     * @param id 用户ID
+     * @return 无
+     */
     @DeleteMapping("/{id}")
+    @Operation(summary = "删除用户", description = "根据用户ID删除用户")
     public ApiResponse<Void> deleteUser(@PathVariable Long id) {
         User user = userService.getById(id);
         if (user == null) {
             throw new BizException("用户不存在");
         }
+
+        // 判断删除的是不是默认管理员
+        if (userService.getById(id).getRoleId().equals(1L)) {
+            throw new BizException("不能删除默认管理员");
+        }
+
         userService.delete(id);
         return ApiResponse.ok(null);
     }

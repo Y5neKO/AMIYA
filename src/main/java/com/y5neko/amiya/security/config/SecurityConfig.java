@@ -39,6 +39,7 @@ public class SecurityConfig {
                 // 自定义权限管理
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 自定义 JWT 认证过滤器

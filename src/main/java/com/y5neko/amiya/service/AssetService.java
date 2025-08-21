@@ -14,4 +14,8 @@ public interface AssetService {
     void delete(Long id);
 
     Page<Asset> getPage(long page, long size, String keyword);
+
+    Page<Asset> getPage(long page, long size, String keyword, Long ownerId);
+
+    Asset getByName(String name);
 }

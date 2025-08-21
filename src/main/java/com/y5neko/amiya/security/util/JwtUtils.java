@@ -2,6 +2,7 @@ package com.y5neko.amiya.security.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 
 import java.security.Key;
 import java.util.Date;
@@ -65,6 +66,35 @@ public class JwtUtils {
             return claims.getExpiration().before(new Date());
         } catch (JwtException e) {
             return true;
+        }
+    }
+
+    /**
+     * 解析JWT并获取用户信息（username + role）
+     */
+    public static UserRole parseUserRole(String token) {
+        Claims claims = parseToken(token);
+        String username = claims.get("username", String.class);
+        String role = claims.get("role", String.class);
+        return new UserRole(username, role);
+    }
+
+    /**
+     * pojo类
+     * 用户和角色信息
+     */
+    @Getter
+    public static class UserRole {
+        private final String username;
+        private final String role;
+
+        public UserRole(String username, String role) {
+            this.username = username;
+            this.role = role;
+        }
+
+        public boolean isAdmin() {
+            return "admin".equalsIgnoreCase(role);
         }
     }
 

@@ -6,4 +6,8 @@ import java.util.Map;
 
 public interface AuthService {
     Map<String, Object> login(AuthRequest request);
+
+    Long getUserIdByUsername(String username);
+
+    void changePassword(Long userId, String oldPassword, String newPassword);
 }

@@ -40,6 +40,11 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public Page<Asset> getPage(long page, long size, String keyword) {
+        return getPage(page, size, keyword, null); // 默认管理员可以看到所有
+    }
+
+    // 新增一个私有方法，带 ownerId 权限过滤
+    public Page<Asset> getPage(long page, long size, String keyword, Long ownerId) {
         QueryWrapper<Asset> wrapper = new QueryWrapper<>();
         if (keyword != null && !keyword.isEmpty()) {
             wrapper.like("name", keyword)
@@ -48,6 +53,23 @@ public class AssetServiceImpl implements AssetService {
                     .or()
                     .like("domain", keyword);
         }
+        if (ownerId != null) {
+            wrapper.eq("owner_id", ownerId); // 普通用户只能看到自己的资产
+        }
         return assetMapper.selectPage(new Page<>(page, size), wrapper);
+    }
+
+    /**
+     * 根据名称查询资产
+     * @param name 资产名称
+     * @return 资产
+     */
+    @Override
+    public Asset getByName(String name) {
+        QueryWrapper<Asset> wrapper = new QueryWrapper<>();
+        wrapper.eq("name", name);
+        // 限制只返回一个结果
+        wrapper.last("limit 1");
+        return assetMapper.selectOne(wrapper);
     }
 }

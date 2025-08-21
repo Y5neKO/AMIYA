@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.y5neko.amiya.dto.request.AuthRequest;
 import com.y5neko.amiya.entity.Role;
 import com.y5neko.amiya.entity.User;
+import com.y5neko.amiya.exception.BizException;
 import com.y5neko.amiya.mapper.RoleMapper;
 import com.y5neko.amiya.mapper.UserMapper;
 import com.y5neko.amiya.security.util.JwtUtils;
@@ -57,5 +58,29 @@ public class AuthServiceImpl implements AuthService {
         response.put("success", true);
         response.put("token", token);
         return response;
+    }
+
+    @Override
+    public Long getUserIdByUsername(String username) {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("username", username);
+        User user = userMapper.selectOne(wrapper);
+        if (user == null) {
+            throw new BizException("用户不存在");
+        }
+        return user.getId();
+    }
+
+    @Override
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BizException("用户不存在");
+        }
+        if (!BCrypt.checkpw(oldPassword, user.getPassword())) {
+            throw new BizException("旧密码错误");
+        }
+        user.setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
+        userMapper.updateById(user);
     }
 }
