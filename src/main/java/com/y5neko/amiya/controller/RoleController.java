@@ -70,6 +70,13 @@ public class RoleController {
 
         Role role = new Role();
         role.setRoleName(request.getRoleName());
+        role.setDescription(request.getDescription());
+
+        // 校验角色名称是否已存在
+        Role exist = roleService.getByName(request.getRoleName());
+        if (exist != null) {
+            throw new BizException("角色名称已存在");
+        }
 
         roleService.create(role);
         Role createdRole = roleService.getById(role.getId());

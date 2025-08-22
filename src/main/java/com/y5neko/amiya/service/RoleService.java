@@ -14,4 +14,6 @@ public interface RoleService {
     void delete(Long id);
 
     Page<Role> getPage(long page, long size, String keyword);
+
+    Role getByName(String roleName);
 }

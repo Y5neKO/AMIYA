@@ -48,4 +48,11 @@ public class RoleServiceImpl implements RoleService {
         }
         return roleMapper.selectPage(new Page<>(page, size), wrapper);
     }
+
+    @Override
+    public Role getByName(String roleName) {
+        QueryWrapper<Role> wrapper = new QueryWrapper<>();
+        wrapper.eq("role_name", roleName);
+        return roleMapper.selectOne(wrapper);
+    }
 }
