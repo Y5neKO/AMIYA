@@ -13,15 +13,11 @@ import java.util.List;
 @Getter
 public class PageResponse<T> {
 
-    // getter & setter
     private long current;   // 当前页
     private long size;      // 每页条数
     private long total;     // 总条数
     private long pages;     // 总页数
     private List<T> records; // 当前页数据
-
-    public PageResponse() {
-    }
 
     public PageResponse(long current, long size, long total, List<T> records) {
         this.current = current;

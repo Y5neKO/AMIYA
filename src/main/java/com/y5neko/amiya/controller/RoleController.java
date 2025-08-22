@@ -70,7 +70,10 @@ public class RoleController {
 
         Role role = new Role();
         role.setRoleName(request.getRoleName());
-        return ApiResponse.ok(roleService.create(role));
+
+        roleService.create(role);
+        Role createdRole = roleService.getById(role.getId());
+        return ApiResponse.ok(createdRole);
     }
 
     @PutMapping("/{id}")
@@ -90,7 +93,9 @@ public class RoleController {
         }
 
         exist.setRoleName(request.getRoleName());
-        return ApiResponse.ok(roleService.update(exist));
+        roleService.update(exist);
+        Role updatedRole = roleService.getById(id);
+        return ApiResponse.ok(updatedRole);
     }
 
     @DeleteMapping("/{id}")

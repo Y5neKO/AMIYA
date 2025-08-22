@@ -34,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
         wrapper.eq("username", request.getUsername());
         User user = userMapper.selectOne(wrapper);
 
+        // 校验账号密码
         Map<String, Object> response = new HashMap<>();
         if (user == null || !BCrypt.checkpw(request.getPassword(), user.getPassword())) {
             response.put("success", false);
@@ -41,9 +42,16 @@ public class AuthServiceImpl implements AuthService {
             return response;
         }
 
+        // 校验账户是否启用
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new BizException("账户已被禁用，请联系管理员");
+        }
+
+        // 获取角色信息
         Role role = roleMapper.selectById(user.getRoleId());
         String roleName = (role != null) ? role.getRoleName() : "user";
 
+        // 生成JWT
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", user.getId());
         claims.put("username", user.getUsername());
@@ -52,10 +60,12 @@ public class AuthServiceImpl implements AuthService {
         claims.put("isActive", user.getIsActive());
         claims.put("createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : null);
         claims.put("updatedAt", user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null);
-
+        // 设置过期时间
         String token = JwtUtils.generateToken(claims, 3600_000);
 
+        // 响应
         response.put("success", true);
+        response.put("data", claims);
         response.put("token", token);
         return response;
     }

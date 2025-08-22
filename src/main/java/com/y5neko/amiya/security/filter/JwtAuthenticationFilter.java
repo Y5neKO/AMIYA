@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Claims claims = JwtUtils.parseToken(token);
 
                 String username = claims.get("username", String.class);
-                String role = claims.get("role", String.class); // ⚡ 从 token 拿 roleName
+                String role = claims.get("role", String.class); // 从 token 拿 roleName
 
                 // 设置 Spring Security 上下文
                 // 设置角色

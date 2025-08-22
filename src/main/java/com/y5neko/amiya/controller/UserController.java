@@ -79,7 +79,9 @@ public class UserController {
         user.setRoleId(request.getRoleId());
         user.setIsActive(request.getIsActive());
 
-        return ApiResponse.ok(userService.create(user));
+        userService.create(user);
+        User createdUser = userService.getById(user.getId());
+        return ApiResponse.ok(createdUser);
     }
 
     @PutMapping("/{id}")
@@ -106,11 +108,18 @@ public class UserController {
         exist.setRoleId(request.getRoleId());
         exist.setIsActive(request.getIsActive());
 
+        // 不可禁用默认管理员
+        if (exist.getId().equals(1L) && !request.getIsActive()) {
+            throw new BizException("不能禁用默认管理员");
+        }
+
         if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
             exist.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
         }
 
-        return ApiResponse.ok(userService.update(exist));
+        userService.update(exist);
+        User updatedUser = userService.getById(id);
+        return ApiResponse.ok(updatedUser);
     }
 
     /**

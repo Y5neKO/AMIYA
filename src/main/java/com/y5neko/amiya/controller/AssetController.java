@@ -115,15 +115,16 @@ public class AssetController {
     public ApiResponse<Asset> createAsset(@Validated(AssetRequest.Create.class) @RequestBody AssetRequest req,
                                           HttpServletRequest request) {
         JwtUtils.UserRole userRole = getCurrentUser(request);
+        // 普通用户无法为其他用户创建资产
         if (!userRole.isAdmin() && !req.getOwnerId().equals(userService.getByUsername(userRole.getUsername()).getId())) {
             throw new BizException("没有权限为其他用户创建资产");
         }
 
-        // 名称唯一性校验
-        Asset existAsset = assetService.getByName(req.getName());
-        if (existAsset != null) {
-            throw new BizException("资产名称已存在");
-        }
+        // 名称唯一性校验，暂时不做校验
+//        Asset existAsset = assetService.getByName(req.getName());
+//        if (existAsset != null) {
+//            throw new BizException("资产名称已存在");
+//        }
 
         // 校验所属用户是否存在
         User owner = userService.getById(req.getOwnerId());
@@ -132,7 +133,11 @@ public class AssetController {
         Asset asset = new Asset();
         BeanUtils.copyProperties(req, asset);
         asset.setTags(MiscUtils.convertListToArray(req.getTags()));
-        return ApiResponse.ok(assetService.create(asset));
+
+        // 先创建资产，再获取完整对象
+        assetService.create(asset);
+        Asset createdAsset = assetService.getById(asset.getId());
+        return ApiResponse.ok(createdAsset);
     }
 
     /**
@@ -150,18 +155,28 @@ public class AssetController {
         Asset exist = assetService.getById(id);
         if (exist == null) throw new BizException("资产不存在");
 
+        // 管理员可以更新所有资产，普通用户只能更新自己的资产
         JwtUtils.UserRole userRole = getCurrentUser(request);
         if (!userRole.isAdmin() && !exist.getOwnerId().equals(userService.getByUsername(userRole.getUsername()).getId())) {
             throw new BizException("没有权限更新该资产");
         }
 
+        // 校验所属用户是否存在
         User owner = userService.getById(req.getOwnerId());
         if (owner == null) throw new BizException("资产所有者不存在");
+
+        // 普通用户无法变更所有者
+        if (!userRole.isAdmin() && !req.getOwnerId().equals(userService.getByUsername(userRole.getUsername()).getId())) {
+            throw new BizException("普通用户无法变更资产所有者");
+        }
 
         BeanUtils.copyProperties(req, exist);
         exist.setId(id);
         exist.setTags(MiscUtils.convertListToArray(req.getTags()));
-        return ApiResponse.ok(assetService.update(exist));
+
+        assetService.update(exist);
+        Asset updatedAsset = assetService.getById(id);
+        return ApiResponse.ok(updatedAsset);
     }
 
     /**
